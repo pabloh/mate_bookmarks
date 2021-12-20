@@ -1,1 +1,1 @@
-# mate_bookmarks
+# Albert Launcher extension for Gnome Bookmarks
