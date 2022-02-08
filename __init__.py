@@ -13,25 +13,45 @@ from albert import *
 from pathlib import Path
 from unidecode import unidecode
 from urllib.parse import urlparse
+from PyQt5 import QtCore
 import os.path
 
 __title__ = "Mate Bookmarks"
 __version__ = "0.0.1"
 __authors__ = "Pablo Herrero"
-__py_deps__ = 'unidecode'
+__py_deps__ = ['unidecode', 'PyQt5']
 
 iconPath = iconLookup("folder")
 xdg_config_dir = os.environ.get('XDG_CONFIG_HOME') or os.path.join(Path.home(), '.config')
+bookmarks_file = os.path.join(xdg_config_dir, 'gtk-3.0', 'bookmarks')
 
 def get_bookmark(url):
     name = url.path.rstrip(os.sep).split(os.sep)[-1]
     return (name, unidecode(name.lower()), f'Open {url.path if url.scheme == "file" else url.geturl()}', url.geturl())
 
-def initialize():
+def update_bookmarks():
     global bookmarks
-    with open(os.path.join(xdg_config_dir, 'gtk-3.0', 'bookmarks'), 'r') as file:
-        urls = (urlparse(l) for l in file.read().splitlines())
-        bookmarks = [get_bookmark(u) for u in urls if u.scheme != 'file' or u.path != Path.home()]
+
+    if os.path.isfile(bookmarks_file):
+        with open(bookmarks_file, 'r') as file:
+            urls = (urlparse(l) for l in file.read().splitlines())
+            bookmarks = [get_bookmark(u) for u in urls if u.scheme != 'file' or u.path != Path.home()]
+    else:
+        bookmarks = []
+
+def set_watcher():
+    global fs_watcher
+
+    fs_watcher = QtCore.QFileSystemWatcher([bookmarks_file])
+    fs_watcher.fileChanged.connect(file_changed)
+
+@QtCore.pyqtSlot(str)
+def file_changed(_):
+    initialize()
+
+def initialize():
+    update_bookmarks()
+    set_watcher()
 
 def handleQuery(query):
     if not query.string:
