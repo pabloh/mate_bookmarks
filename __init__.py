@@ -44,7 +44,7 @@ class Plugin(PluginInstance, GlobalQueryHandler):
         self.observer = BookmarkWatcher.start_watching_on_bg(self)
 
     def handleGlobalQuery(self, query):
-        exp_query = query.string.lower()
+        exp_query = query.string.strip().lower()
         return [
             RankItem(
                 item=StandardItem(
