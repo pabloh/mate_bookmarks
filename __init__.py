@@ -31,14 +31,14 @@ class Plugin(PluginInstance, GlobalQueryHandler):
     xdg_config_dir = os.environ.get('XDG_CONFIG_HOME') or os.path.join(Path.home(), '.config')
     bookmarks_file = os.path.join(xdg_config_dir, 'gtk-3.0', 'bookmarks')
 
-    def finalize(self):
+    def __del__(self):
         # info('Finalize ' + md_id)
         self.observer.stop_watching()
 
     def __init__(self):
         # info('Initialize ' + md_id)
         GlobalQueryHandler.__init__(self, md_id, md_name, md_description, defaultTrigger=md_id)
-        PluginInstance.__init__(self, extensions=[self])
+        PluginInstance.__init__(self)
 
         self.update_bookmarks()
         self.observer = BookmarkWatcher.start_watching_on_bg(self)
