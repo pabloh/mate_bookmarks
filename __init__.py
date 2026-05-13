@@ -17,43 +17,39 @@ from watchdog.events import FileSystemEventHandler
 from threading import Thread
 import os.path
 
-md_iid = "2.0"
-md_version = "0.2"
+md_iid = "5.0"
+md_version = "0.3"
 md_name = "Mate Bookmarks"
 md_description = "Launch Bookmarks from Caja"
 md_lib_dependencies = ['watchdog']
 md_license = "MIT"
 md_url = "https://github.com/pabloh/mate_bookmarks"
-md_authors = "@pabloh"
+md_authors = ["@pabloh"]
 
 class Plugin(PluginInstance, GlobalQueryHandler):
-    xdg_icon = "xdg:folder"
+    icon = Icon.theme("folder")
     xdg_config_dir = os.environ.get('XDG_CONFIG_HOME') or os.path.join(Path.home(), '.config')
     bookmarks_file = os.path.join(xdg_config_dir, 'gtk-3.0', 'bookmarks')
 
     def __del__(self):
-        # info('Finalize ' + md_id)
-        self.observer.stop_watching()
+        if hasattr(self, 'observer'):
+            self.observer.stop_watching()
 
     def __init__(self):
-        # info('Initialize ' + md_id)
-        GlobalQueryHandler.__init__(self, md_id, md_name, md_description, defaultTrigger=md_id)
-        PluginInstance.__init__(self)
-
         self.update_bookmarks()
         self.observer = BookmarkWatcher.start_watching_on_bg(self)
 
-    def handleGlobalQuery(self, query):
-        exp_query = query.string.strip().lower()
+    def rankItems(self, context):
+        exp_query = context.query.strip().lower()
         return [
             RankItem(
                 item=StandardItem(
                     id=exp,
                     text=text,
                     subtext=subtext,
-                    iconUrls=[self.xdg_icon],
-                    actions=[Action("open", "Open bookmark", lambda: runDetachedProcess(["xdg-open", url]))]),
-                score=1.0)
+                    icon_factory=lambda: self.icon,
+                    actions=[Action("open", "Open bookmark", lambda url=url: runDetachedProcess(["xdg-open", url]))]),
+                score=0.0 if not exp_query else len(exp_query) / len(exp))
             for text, exp, subtext, url in self.bookmarks if (exp.startswith(exp_query))
         ]
 
