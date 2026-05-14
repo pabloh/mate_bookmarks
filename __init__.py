@@ -27,7 +27,6 @@ md_url = "https://github.com/pabloh/mate_bookmarks"
 md_authors = ["@pabloh"]
 
 class Plugin(PluginInstance, GlobalQueryHandler):
-    icon = Icon.theme("folder")
     xdg_config_dir = os.environ.get('XDG_CONFIG_HOME') or os.path.join(Path.home(), '.config')
     bookmarks_file = os.path.join(xdg_config_dir, 'gtk-3.0', 'bookmarks')
 
@@ -47,7 +46,7 @@ class Plugin(PluginInstance, GlobalQueryHandler):
                     id=exp,
                     text=text,
                     subtext=subtext,
-                    icon_factory=lambda: self.icon,
+                    icon_factory=lambda: Icon.theme("folder"),
                     actions=[Action("open", "Open bookmark", lambda url=url: runDetachedProcess(["xdg-open", url]))]),
                 score=0.0 if not exp_query else len(exp_query) / len(exp))
             for text, exp, subtext, url in self.bookmarks if (exp.startswith(exp_query))
