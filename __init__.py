@@ -35,6 +35,9 @@ class Plugin(PluginInstance, GlobalQueryHandler):
             self.observer.stop_watching()
 
     def __init__(self):
+        PluginInstance.__init__(self)
+        GlobalQueryHandler.__init__(self)
+        # GlobalQueryHandler.__init__(self, md_id, md_name, md_description, defaultTrigger=md_id)
         self.update_bookmarks()
         self.observer = BookmarkWatcher.start_watching_on_bg(self)
 
